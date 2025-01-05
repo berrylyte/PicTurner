@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slideshow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="settings-panel">
+            <div class="folder-section">
+                <button id="folder-button">Choose Folder</button>
+                <input type="text" id="folder-path" readonly placeholder="No folder selected">
+            </div>
+            
+            <div class="time-settings">
+                <label>
+                    Minutes: <input type="number" id="minutes" min="0" value="0">
+                </label>
+                <label>
+                    Seconds: <input type="number" id="seconds" min="0" max="59" value="30">
+                </label>
+            </div>
+        </div>
+
+        <div class="slideshow-container">
+            <div class="image-container">
+                <div class="timer-overlay">
+                    <div id="timer" class="timer">00:00</div>
+                </div>
+                <img id="current-image" src="" alt="No image selected">
+            </div>
+            
+            <div class="controls">
+                <button id="prev-button">Previous</button>
+                <button id="play-pause">Play</button>
+                <button id="next-button">Next</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
