@@ -1,6 +1,6 @@
-# PicTuner
+# PicTurner
 
-PicTuner is a simple and lightweight web tool designed for sketch training. When practicing sketching for different purposes, the time spent on each sketch may vary. This tool allows users to set a timer to automatically switch through images in a folder, helping to streamline sketching exercises.
+PicTurner is a simple and lightweight web tool designed for sketch training. When practicing sketching for different purposes, the time spent on each sketch may vary. This tool allows users to set a timer to automatically switch through images in a folder, helping to streamline sketching exercises.
 
 ## Features
 - **Custom Timer**: Set specific durations for displaying each image.
@@ -36,20 +36,20 @@ Below are a few screenshots of the application interface:
 
 ## Live Demo
 
-PicTuner is now live on **GitHub Pages**! 🎉 You can access and use the application directly through the following link:
+PicTurner is now live on **GitHub Pages**! 🎉 You can access and use the application directly through the following link:
 
-👉 [PicTuner Live Demo](https://berrylyte.github.io/PicTuner/)
+👉 [PicTurner Live Demo](https://berrylyte.github.io/PicTurner/)
 
 No installation or setup is required—just open the link in your browser and start your sketch training!
 
 ### Installation and Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/berrylyte/pictuner.git
+   git clone https://github.com/berrylyte/PicTurner.git
 
 2. Navigate to the project directory:
    ```bash
-   cd pictuner
+   cd PicTurner
 
 3. Open the `index.html` file in your web browser:
    ```bash
