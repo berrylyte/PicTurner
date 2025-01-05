@@ -58,5 +58,13 @@ No installation or setup is required—just open the link in your browser and st
 ### Example
 You can load a local folder with images and set a 30-second timer for each image. The application will remember your progress and resume from the last viewed image when reopened.
 
+## To-Do List
+Here are the planned features for future development:
+
+- [ ] Add a feature to enable or disable random playback of images.
+- [ ] Add an option to enable a sound alert for the last few seconds of the countdown.
+- [ ] Add an "End Practice" button that shows a summary of the current practice session.
+- [ ] Explore integrating an API to filter local images by attributes such as camera angle or character type, using tags.
+
 ## License
 This project is licensed under the **MIT** License. See the `LICENSE file` for details.
