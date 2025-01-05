@@ -34,6 +34,14 @@ Below are a few screenshots of the application interface:
 - No installation required.
 - Any modern web browser that supports HTML, CSS, and JavaScript.
 
+## Live Demo
+
+PicTuner is now live on **GitHub Pages**! 🎉 You can access and use the application directly through the following link:
+
+👉 [PicTuner Live Demo](https://berrylyte.github.io/PicTuner/)
+
+No installation or setup is required—just open the link in your browser and start your sketch training!
+
 ### Installation and Setup
 1. Clone the repository:
    ```bash
