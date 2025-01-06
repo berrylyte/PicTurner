@@ -1,6 +1,7 @@
 # PicTurner
 
 PicTurner is a simple and lightweight web tool designed for sketch training. When practicing sketching for different purposes, the time spent on each sketch may vary. This tool allows users to set a timer to automatically switch through images in a folder, helping to streamline sketching exercises.
+速写定时图片翻页轻量级在线网站。
 
 ## Features
 - **Custom Timer**: Set specific durations for displaying each image.
