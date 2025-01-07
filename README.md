@@ -61,8 +61,18 @@ Below are a few screenshots of the application interface: 以下是应用界面�
    ```bash
    open index.html   
 
-### Example
-You can load a local folder with images and set a 30-second timer for each image. The application will remember your progress and resume from the last viewed image when reopened.
+### Suggestions 建议
+1. **30 seconds**: Practice dynamic lines to capture motion.  
+   **30秒**：练习动态线，捕捉动作。
+
+2. **2 minutes**: Add basic structure (head, torso, hips) to dynamic lines.  
+   **2分钟**：在动态线条基础上增加头部、躯干和胯部的基本结构。
+
+3. **5 minutes**: Include details while refining structure and dynamic lines.  
+   **5分钟**：在动态线条和结构基础上增加细节。
+
+Use these timed practices to improve speed, proportions, and sketching efficiency.  
+通过这些计时练习提升速度、比例感和速写效率。
 
 ## To-Do List
 Here are the planned features for future development:
