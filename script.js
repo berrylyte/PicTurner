@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Script loaded and running');
 
     // Get DOM elements
-    const dropZone = document.getElementById('drop-zone');
     const folderButton = document.getElementById('folder-button');
     const imageElement = document.getElementById('current-image');
     const prevButton = document.getElementById('prev-button');
@@ -12,11 +11,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const secondsInput = document.getElementById('seconds');
     const timerDisplay = document.getElementById('timer');
     const folderPathInput = document.getElementById('folder-path');
+    const resetButton = document.getElementById('reset-button');
+
+    // for sound effect
+    const soundToggle = document.getElementById('sound-toggle');
+    const volumeSlider = document.getElementById('volume-slider');
+    const countdownSound = document.getElementById('countdown-sound');
+
 
     // State variables
     let imageFiles = [];
     let currentImageIndex = 0;
-    let timerInterval = null;
+    let countdown = null; // Replaces timerInterval for better control
+    let remainingTime = 0; // Tracks the current countdown time
     let isPlaying = false;
     let dirHandle = null;  // Store directory handle
     let logFileHandle = null;  // Store log file handle
@@ -24,6 +31,21 @@ document.addEventListener('DOMContentLoaded', function() {
         lastPlayed: null,
         playCount: {}
     };
+
+
+    // --- Audio Control Logic ---
+    // Function to set the audio volume from the slider's value
+    function setVolume() {
+        // The slider value is 0-100, but audio volume is 0.0-1.0
+        countdownSound.volume = volumeSlider.value / 100;
+    }
+
+    // Add event listener for the volume slider
+    volumeSlider.addEventListener('input', setVolume);
+
+    // Set the initial volume when the script loads
+    setVolume();
+
 
     // Function to read or create log file
     async function initializeLog() {
@@ -72,57 +94,62 @@ document.addEventListener('DOMContentLoaded', function() {
     // Timer control functions
     let displayDuration = 0;  // Track how long current image has been displayed
 
-    function startSlideshow() {
-        if (imageFiles.length === 0) {
-            console.log('No images to display');
-            return;
+    // replace startSlideshow(), stopSlideshow(), and restartSlideshow()
+    // three new functions with remaining time:
+    function play() {
+        if (imageFiles.length === 0) return;
+
+        if (remainingTime <= 0) { // Checks if we need to start a new countdown
+            const minutes = parseInt(minutesInput.value) || 0;
+            const seconds = parseInt(secondsInput.value) || 0;
+            remainingTime = minutes * 60 + seconds;
+            displayDuration = 0;
         }
 
-        const minutes = parseInt(minutesInput.value) || 0;
-        const seconds = parseInt(secondsInput.value) || 0;
-        const totalSeconds = minutes * 60 + seconds;
-
-        if (totalSeconds <= 0) {
-            console.log('Please set a valid time');
-            return;
-        }
-
-        console.log(`Starting slideshow with interval: ${minutes}m ${seconds}s`);
         isPlaying = true;
         playPauseButton.textContent = 'Pause';
-
-        let remainingSeconds = totalSeconds;
-        displayDuration = 0;
-        updateTimerDisplay(remainingSeconds);
-
-        timerInterval = setInterval(() => {
-            remainingSeconds--;
+        
+        clearInterval(countdown); // Prevent multiple timers
+        countdown = setInterval(() => {
+            remainingTime--;
             displayDuration++;
-            updateTimerDisplay(remainingSeconds);
+            updateTimerDisplay(remainingTime);
 
-            if (remainingSeconds <= 0) {
-                // Record play count if displayed for more than 30 seconds
-                if (displayDuration >= 30) {
-                    recordPlayCount(imageFiles[currentImageIndex].name);
-                }
+            // --- Add this "if" block to play the sound ---
+            // Check if the timer is at 3 seconds and if the sound is enabled
+            if (remainingTime === 3 && soundToggle.checked) {
+                countdownSound.play();
+            }
+            // --- End of new block ---
+
+            if (remainingTime <= 0) { // When timer finishes
+                if (displayDuration >= 5) recordPlayCount(imageFiles[currentImageIndex].name);
                 
-                // Move to next image
                 currentImageIndex = (currentImageIndex + 1) % imageFiles.length;
                 showImage(currentImageIndex);
-                // Reset timers
-                remainingSeconds = totalSeconds;
-                displayDuration = 0;
+                
+                clearInterval(countdown);
+                play(); // Loop to the next image
             }
         }, 1000);
     }
 
-    function stopSlideshow() {
-        console.log('Stopping slideshow');
+    function pause() {
         isPlaying = false;
         playPauseButton.textContent = 'Play';
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
+        clearInterval(countdown);
+        // The 'remainingTime' variable automatically saves the current time
+    }
+
+    function resetTimer() {
+        const minutes = parseInt(minutesInput.value) || 0;
+        const seconds = parseInt(secondsInput.value) || 0;
+        remainingTime = minutes * 60 + seconds;
+        displayDuration = 0;
+        updateTimerDisplay(remainingTime);
+
+        if (isPlaying) { // If it was playing, restart the interval with the new time
+            play();
         }
     }
 
@@ -135,28 +162,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Play/Pause button handler
     playPauseButton.addEventListener('click', () => {
-        console.log('Play/Pause clicked, current state:', isPlaying);
         if (isPlaying) {
-            stopSlideshow();
+            pause();
         } else {
-            startSlideshow();
+            play();
         }
     });
+
+    // Add a listener for the new Reset button
+    resetButton.addEventListener('click', resetTimer);
+
+    // Change the time input listeners
+    minutesInput.addEventListener('change', resetTimer);
+    secondsInput.addEventListener('change', resetTimer);
+
+    // Change the navigateImage function
+    function navigateImage(direction) {
+        if (imageFiles.length === 0) return;
+
+        if (displayDuration >= 5) {
+            recordPlayCount(imageFiles[currentImageIndex].name);
+        }
+
+        let newIndex = currentImageIndex + direction;
+        const numImages = imageFiles.length;
+        currentImageIndex = (newIndex % numImages + numImages) % numImages;
+
+        showImage(currentImageIndex);
+        resetTimer(); // This cleanly resets the timer for the new image
+    }
 
     // Time input handlers
     minutesInput.addEventListener('change', () => {
         console.log('Minutes changed:', minutesInput.value);
         if (isPlaying) {
-            stopSlideshow();
-            startSlideshow();
+            restartSlideshow();
         }
     });
 
     secondsInput.addEventListener('change', () => {
         console.log('Seconds changed:', secondsInput.value);
         if (isPlaying) {
-            stopSlideshow();
-            startSlideshow();
+            restartSlideshow();
         }
     });
 
@@ -200,43 +247,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Navigation buttons
-    prevButton.onclick = function() {
-        if (imageFiles.length === 0) return;
-        if (displayDuration >= 30) {
-            recordPlayCount(imageFiles[currentImageIndex].name);
-        }
-        let newIndex = currentImageIndex - 1;
-        if (newIndex < 0) newIndex = imageFiles.length - 1;
-        showImage(newIndex);
-        if (isPlaying) {
-            stopSlideshow();
-            startSlideshow();
-        }
-        displayDuration = 0;
-    };
-
-    nextButton.onclick = function() {
-        if (imageFiles.length === 0) return;
-        if (displayDuration >= 30) {
-            recordPlayCount(imageFiles[currentImageIndex].name);
-        }
-        let newIndex = currentImageIndex + 1;
-        if (newIndex >= imageFiles.length) newIndex = 0;
-        showImage(newIndex);
-        if (isPlaying) {
-            stopSlideshow();
-            startSlideshow();
-        }
-        displayDuration = 0;
-    };
+    // Navigation buttons 
+    prevButton.onclick = () => navigateImage(-1);
+    nextButton.onclick = () => navigateImage(1);
 
     // Folder button click handler
     folderButton.onclick = async function() {
         try {
             dirHandle = await window.showDirectoryPicker();
             folderPathInput.value = dirHandle.name;
-            const files = [];
+            const files = []; 
             
             // Initialize log first
             await initializeLog();
@@ -249,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         files.push(file);
                     } else if (entry.kind === 'directory') {
                         await getFilesRecursively(entry);
-                    }
+                    }  
                 }
             }
 
@@ -271,77 +291,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Drag and drop handlers
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.add('drag-over');
-    });
-
-    dropZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.remove('drag-over');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.remove('drag-over');
-        console.log('Drop event occurred');
-
-        const items = Array.from(e.dataTransfer.items);
-        console.log('Dropped items:', items.length);
-
-        let files = [];
-        let pendingDirectories = 0;
-
-        function handleEntry(entry) {
-            if (entry.isFile) {
-                entry.file((file) => {
-                    console.log('Found file:', file.name);
-                    files.push(file);
-                    if (pendingDirectories === 0) {
-                        processImageFiles(files);
-                    }
-                });
-            } else if (entry.isDirectory) {
-                pendingDirectories++;
-                const reader = entry.createReader();
-                
-                function readNextBatch() {
-                    reader.readEntries((entries) => {
-                        if (entries.length > 0) {
-                            entries.forEach(handleEntry);
-                            readNextBatch(); // Continue reading if there might be more entries
-                        } else {
-                            pendingDirectories--;
-                            if (pendingDirectories === 0) {
-                                console.log('All directories processed, total files:', files.length);
-                                processImageFiles(files);
-                            }
-                        }
-                    }, (error) => {
-                        console.error('Error reading directory:', error);
-                        pendingDirectories--;
-                        if (pendingDirectories === 0) {
-                            processImageFiles(files);
-                        }
-                    });
-                }
-                
-                readNextBatch();
-            }
-        }
-
-        for (const item of items) {
-            if (item.kind === 'file') {
-                const entry = item.webkitGetAsEntry();
-                if (entry) {
-                    console.log('Processing entry:', entry.name, 'isDirectory:', entry.isDirectory);
-                    handleEntry(entry);
-                }
-            }
-        }
-    });
 }); 

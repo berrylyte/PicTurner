@@ -32,7 +32,20 @@
                 <label>
                     Seconds: <input type="number" id="seconds" min="0" max="59" value="30">
                 </label>
+                <button id="reset-button">Reset</button> </div>
             </div>
+
+            <div class="audio-settings" style="margin-top: 15px;">
+                <label>
+                    Sound On:
+                    <input type="checkbox" id="sound-toggle" checked>
+                </label>
+                <label style="margin-left: 20px;">
+                    Volume:
+                    <input type="range" id="volume-slider" min="0" max="100" value="20">
+                </label>
+            </div>
+
         </div>
 
         <div class="slideshow-container">
@@ -50,6 +63,7 @@
             </div>
         </div>
     </div>
+    <audio id="countdown-sound" src="countdown-sound-effect-8-bit-151797.mp3" preload="auto"></audio>
     <script src="script.js"></script>
 </body>
 </html> 
