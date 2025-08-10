@@ -20,32 +20,59 @@
 <body>
     <div class="container">
         <div class="settings-panel">
-            <div class="folder-section">
-                <button id="folder-button">Choose Folder</button>
-                <input type="text" id="folder-path" readonly placeholder="No folder selected">
-            </div>
-            
-            <div class="time-settings">
-                <label>
-                    Minutes: <input type="number" id="minutes" min="0" value="0">
-                </label>
-                <label>
-                    Seconds: <input type="number" id="seconds" min="0" max="59" value="30">
-                </label>
-                <button id="reset-button">Reset</button> </div>
+            <div class="settings-controls">
+                <div class="folder-section">
+                    <button id="folder-button">Choose Folder</button>
+                    <input type="text" id="folder-path" readonly placeholder="No folder selected">
+                </div>
+                
+                <div class="quick-time-buttons">
+                    <label>
+                        Quick Time Setting:
+                    </label>
+                    <div>
+                        <input type="radio" id="time-30s" name="quicktime" class="time-radio" data-minutes="0" data-seconds="30">
+                        <label for="time-30s">30s</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="time-1m" name="quicktime" class="time-radio" data-minutes="1" data-seconds="0">
+                        <label for="time-1m">1min</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="time-2m" name="quicktime" class="time-radio" data-minutes="2" data-seconds="0">
+                        <label for="time-2m">2min</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="time-5m" name="quicktime" class="time-radio" data-minutes="5" data-seconds="0">
+                        <label for="time-5m">5min</label>
+                    </div>
+                </div>
+
+                <div class="time-settings">
+                    <label>
+                        Minutes: <input type="number" id="minutes" min="0" value="0">
+                    </label>
+                    <label>
+                        Seconds: <input type="number" id="seconds" min="0" max="59" value="30">
+                    </label>
+                    <button id="reset-button">Reset</button> 
+                </div>
+
+                <div class="audio-settings">
+                    <label>
+                        Sound On:
+                        <input type="checkbox" id="sound-toggle" checked>
+                    </label>
+                    <label style="margin-left: 20px;">
+                        Volume:
+                        <input type="range" id="volume-slider" min="0" max="100" value="20">
+                    </label>
+                </div>
             </div>
 
-            <div class="audio-settings" style="margin-top: 15px;">
-                <label>
-                    Sound On:
-                    <input type="checkbox" id="sound-toggle" checked>
-                </label>
-                <label style="margin-left: 20px;">
-                    Volume:
-                    <input type="range" id="volume-slider" min="0" max="100" value="20">
-                </label>
+            <div class="log-container">
+                <div id="session-log"></div>
             </div>
-
         </div>
 
         <div class="slideshow-container">

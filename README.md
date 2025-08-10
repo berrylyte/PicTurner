@@ -76,21 +76,24 @@ Use these timed practices to improve speed, proportions, and sketching efficienc
 
 ## Update Record
 
+### To Do
+Here are the planned features for future development:
+
+- [ ] Implement a download button to prevent errors caused by needing to log in to the GitHub page. 实现一个下载按钮，帮助用户快速布置到本地。
+
+### Update (10 Aug 2025)
+- Add a default timer selection(30s, 1min, 2min, 5min) to make the settings more convenient. 根据常见练习安排添加默认的计时器(30s, 1min, 2min, 5min)选项，使设置更方便。
+
+- Create a Session Log that shows how many pictures have been practiced and for what duratio. 创建一个练习总结，用于显示本次已练习的图片数量和时长。
+
+- Restyle settings panel for better aesthetics. 重新整理设置区排版，使其更美观清晰。
+
 ### Update (9 Aug 2025)
 - Corrected the pause/play bug. 修复了暂停与播放功能的程序错误。
 
 - Added an extra timer reset button. 添加了额外的计时器重置按钮。
 
 - Added a 3-second countdown voice alert. 添加了3秒倒计时的声音提示。
-
-### To Do
-Here are the planned features for future development:
-
-- [ ] Implement a download button to prevent errors caused by needing to log in to the GitHub page. 实现一个下载按钮，帮助用户快速布置到本地。
-
-- [ ] Add a default timer selection to make the settings more convenient. 根据常见练习安排添加默认的计时器选项，使设置更方便。
-
-- [ ] Create a practice summary that shows how many pictures have been practiced and for what duration (e.g., X pictures for 30 seconds, Y pictures for 1 minute, etc.). 创建一个练习总结，用于显示已练习的图片数量和时长（例如：X张图片练习了30秒，Y张图片练习了1分钟等）。
 
 ## Keywords 关键词
 PicTurner, sketch training, image switching tool, online timer, 图片切换, 速写训练, 在线工具, 速写练习, 自动图片切换, 图片定时切换, 速写辅助工具

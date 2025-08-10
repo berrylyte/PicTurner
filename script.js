@@ -12,12 +12,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const timerDisplay = document.getElementById('timer');
     const folderPathInput = document.getElementById('folder-path');
     const resetButton = document.getElementById('reset-button');
-
     // for sound effect
     const soundToggle = document.getElementById('sound-toggle');
     const volumeSlider = document.getElementById('volume-slider');
     const countdownSound = document.getElementById('countdown-sound');
-
+    // get session log
+    const sessionLogElement = document.getElementById('session-log'); 
+    // quick time setting
+    const quickTimeRadios = document.querySelectorAll('.time-radio');
 
     // State variables
     let imageFiles = [];
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lastPlayed: null,
         playCount: {}
     };
+    let sessionStats = {}; // Add this line to track session stats
 
 
     // --- Audio Control Logic ---
@@ -123,7 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // --- End of new block ---
 
             if (remainingTime <= 0) { // When timer finishes
-                if (displayDuration >= 5) recordPlayCount(imageFiles[currentImageIndex].name);
+                if (displayDuration >= 5){
+                    recordPlayCount(imageFiles[currentImageIndex].name);
+                    logSessionActivity();
+                } 
                 
                 currentImageIndex = (currentImageIndex + 1) % imageFiles.length;
                 showImage(currentImageIndex);
@@ -158,6 +164,50 @@ document.addEventListener('DOMContentLoaded', function() {
         const secs = seconds % 60;
         timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         console.log('Timer updated:', timerDisplay.textContent);
+    }
+
+    // This function updates the session log display on the screen.
+    function updateSessionLogDisplay() {
+        // Clear the previous content
+        sessionLogElement.innerHTML = '';
+
+        // Add a title to the log
+        const title = document.createElement('h4');
+        title.textContent = 'Session Log'; // This is the title for the log panel
+        sessionLogElement.appendChild(title);
+
+        // Create and add a paragraph for each statistic
+        for (const duration in sessionStats) {
+            const count = sessionStats[duration];
+            const statText = document.createElement('p');
+            statText.textContent = `${duration}: ${count} images`;
+            sessionLogElement.appendChild(statText);
+        }
+    }
+
+    // This function logs the completion of an image view.
+    function logSessionActivity() {
+        const minutes = parseInt(minutesInput.value) || 0;
+        const seconds = parseInt(secondsInput.value) || 0;
+
+        // Create a key for the duration, e.g., "30s" or "1m 30s"
+        let durationKey;
+        if (minutes === 0) {
+            durationKey = `${seconds}s`;
+        } else if (seconds === 0) {
+            durationKey = `${minutes}m`;
+        } else {
+            durationKey = `${minutes}m ${seconds}s`;
+        }
+
+        // If this is the first time for this duration, initialize it.
+        if (!sessionStats[durationKey]) {
+            sessionStats[durationKey] = 0;
+        }
+        
+        // Increment the count and update the display.
+        sessionStats[durationKey]++;
+        updateSessionLogDisplay();
     }
 
     // Play/Pause button handler
@@ -291,4 +341,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // --- Event Listener for Quick Time Radio Buttons ---
+    quickTimeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // "this" refers to the selected radio button
+            if (this.checked) {
+                // Get the time values from the data attributes
+                const minutes = this.dataset.minutes;
+                const seconds = this.dataset.seconds;
+
+                // Update the input fields
+                minutesInput.value = minutes;
+                secondsInput.value = seconds;
+
+                // Call resetTimer() to apply the change immediately
+                resetTimer();
+            }
+        });
+    });
+
+    updateSessionLogDisplay();
 }); 
