@@ -160,8 +160,8 @@ body {
  */
 #session-log {
     width: 100%; /* Fill the container's width */
-    height: 100%; /* Fill the container's height */
-    max-height: 108px;
+    height: 90%; /* Fill the container's height */
+    /*max-height: 108px;*/
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -207,4 +207,34 @@ body {
 
 .quick-time-buttons input[type="radio"] {
     cursor: pointer;
+}
+
+
+/* Basic style for the shuffle button in its new location */
+#shuffle-button {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f0f0f0; /* Default color for 'off' state */
+    color: var(--text-color);
+    font-size: 14px;
+    transition: background-color 0.2s, color 0.2s;
+    width: 100%; /* Make the button span the full width of the left panel */
+    margin-top: 5px; /* Add some space above it */
+}
+
+#shuffle-button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Style for when shuffle mode is ON */
+#shuffle-button.shuffle-on {
+    background-color: #28a745; /* A pleasant green color for the 'on' state */
+    color: white;
+    border-color: #218838;
+}
+
+#shuffle-button.shuffle-on:hover {
+    background-color: #218838; /* A darker green on hover */
 }

@@ -81,6 +81,10 @@ Here are the planned features for future development:
 
 - [ ] Implement a download button to prevent errors caused by needing to log in to the GitHub page. 实现一个下载按钮，帮助用户快速布置到本地。
 
+### Update (18 Aug 2025)
+- Add Shuffle Mode, now can play the images in random sequence. 更新随机模式，现在可以随机播放图片了。
+- Corrected log written bug. 修复log记录错误，现在log会出现在用户操作后，避免一些权限报错。
+
 ### Update (10 Aug 2025)
 - Add a default timer selection(30s, 1min, 2min, 5min) to make the settings more convenient. 根据常见练习安排添加默认的计时器(30s, 1min, 2min, 5min)选项，使设置更方便。
 

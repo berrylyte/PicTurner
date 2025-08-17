@@ -20,9 +20,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const sessionLogElement = document.getElementById('session-log'); 
     // quick time setting
     const quickTimeRadios = document.querySelectorAll('.time-radio');
+    // shuffle mode
+    const shuffleButton = document.getElementById('shuffle-button');
 
     // State variables
-    let imageFiles = [];
+    let imageFiles = []; // This will now act as the current playlist
     let currentImageIndex = 0;
     let countdown = null; // Replaces timerInterval for better control
     let remainingTime = 0; // Tracks the current countdown time
@@ -34,7 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
         playCount: {}
     };
     let sessionStats = {}; // Add this line to track session stats
-
+    let wakeLock = null;   // To save Screen Lock info
+    let originalImageFiles = []; // To store the full list of files in their original order
+    let isShuffling = false; // New state for shuffle mode
 
     // --- Audio Control Logic ---
     // Function to set the audio volume from the slider's value
@@ -91,7 +95,79 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         playLog.playCount[fileName]++;
         playLog.lastPlayed = fileName;
-        saveLog();
+        // The saveLog() call is now removed.
+    }
+
+    // --- Screen Wake Lock Control Logic ---
+    const requestWakeLock = async () => {
+      // check if browser support Wake Lock API
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('Screen Wake Lock has been acquired');
+
+          // when lock has been released
+          wakeLock.addEventListener('release', () => {
+            console.log('Screen Wake Lock was released');
+            wakeLock = null; // set variable to null
+          });
+
+        } catch (err) {
+          console.error(`Failed to acquire wake lock: ${err.name}, ${err.message}`);
+        }
+      } else {
+        console.warn('This browser not support Screen Wake Lock API.');
+      }
+    };
+
+    // release wake lock
+    const releaseWakeLock = () => {
+      // check wakelock is null, prevent duo-release
+      if (wakeLock) {
+        wakeLock.release();
+        wakeLock = null;
+      }
+    };
+
+    // --- Playlist Generation Logic ---
+    function generatePlaylist() {
+        if (originalImageFiles.length === 0) {
+            imageFiles = [];
+            return;
+        }
+
+        const allFilesWithCount = originalImageFiles.map(file => ({
+            file: file,
+            count: playLog.playCount[file.name] || 0
+        }));
+
+        let unplayedFiles = allFilesWithCount.filter(item => item.count === 0);
+
+        let filesToPlay;
+        if (unplayedFiles.length > 0) {
+            filesToPlay = unplayedFiles.map(item => item.file);
+        } else {
+            let minCount = Infinity;
+            allFilesWithCount.forEach(item => {
+                if (item.count < minCount) {
+                    minCount = item.count;
+                }
+            });
+            filesToPlay = allFilesWithCount
+                .filter(item => item.count === minCount)
+                .map(item => item.file);
+        }
+
+        if (isShuffling) {
+            for (let i = filesToPlay.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [filesToPlay[i], filesToPlay[j]] = [filesToPlay[j], filesToPlay[i]];
+            }
+        }
+
+        imageFiles = filesToPlay;
+        currentImageIndex = 0;
+        console.log(`Generated new playlist with ${imageFiles.length} images.`);
     }
 
     // Timer control functions
@@ -99,8 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // replace startSlideshow(), stopSlideshow(), and restartSlideshow()
     // three new functions with remaining time:
-    function play() {
+    async function play() {
         if (imageFiles.length === 0) return;
+
+        await requestWakeLock();// request wake lock
 
         if (remainingTime <= 0) { // Checks if we need to start a new countdown
             const minutes = parseInt(minutesInput.value) || 0;
@@ -118,24 +196,41 @@ document.addEventListener('DOMContentLoaded', function() {
             displayDuration++;
             updateTimerDisplay(remainingTime);
 
-            // --- Add this "if" block to play the sound ---
             // Check if the timer is at 3 seconds and if the sound is enabled
             if (remainingTime === 3 && soundToggle.checked) {
                 countdownSound.play();
             }
-            // --- End of new block ---
+            
 
             if (remainingTime <= 0) { // When timer finishes
                 if (displayDuration >= 5){
+                    // V V V ADD THIS LINE FOR TESTING V V V
+                    console.log(`Logging image in shuffle mode: ${isShuffling}`, imageFiles[currentImageIndex].name);
+                    
                     recordPlayCount(imageFiles[currentImageIndex].name);
                     logSessionActivity();
-                } 
+                }
+
+                currentImageIndex++; // Move to the next image in the current playlist
+
+                // If the playlist is finished, generate a new one
+                if (currentImageIndex >= imageFiles.length) {
+                    console.log("Playlist exhausted. Generating a new one.");
+                    generatePlaylist();
+                    
+                    // If the new playlist is empty, stop playback
+                    if (imageFiles.length === 0) {
+                        pause();
+                        console.log("All images have been played an equal number of times.");
+                        imageElement.src = "";
+                        imageElement.alt = "All images have been played. Please select a new folder or reset the log.";
+                        return;
+                    }
+                }
                 
-                currentImageIndex = (currentImageIndex + 1) % imageFiles.length;
                 showImage(currentImageIndex);
-                
                 clearInterval(countdown);
-                play(); // Loop to the next image
+                play(); // Continue with the next image
             }
         }, 1000);
     }
@@ -145,6 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
         playPauseButton.textContent = 'Play';
         clearInterval(countdown);
         // The 'remainingTime' variable automatically saves the current time
+
+        releaseWakeLock();// release the wakelock
+        saveLog();
     }
 
     function resetTimer() {
@@ -219,6 +317,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // shufflebutton handler
+    shuffleButton.addEventListener('click', () => {
+        isShuffling = !isShuffling; // Toggle the shuffle state
+        shuffleButton.textContent = isShuffling ? 'Shuffle Mode On' : 'Turn on Shuffle play'; // Update button text
+        console.log(`Shuffle mode is now ${isShuffling ? 'ON' : 'OFF'}`);
+        
+        // Add or remove the 'shuffle-on' class to change the button's color
+        if (isShuffling) {
+            shuffleButton.classList.add('shuffle-on');
+        } else {
+            shuffleButton.classList.remove('shuffle-on');
+        }
+
+        // Regenerate the playlist with the new shuffle setting
+        generatePlaylist();
+
+        // Update the view if images are loaded
+        if (imageFiles.length > 0) {
+            showImage(0); // Show the first image of the new playlist
+            resetTimer();
+            if (isPlaying) {
+                play();
+            }
+        }
+    });
+
     // Add a listener for the new Reset button
     resetButton.addEventListener('click', resetTimer);
 
@@ -233,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (displayDuration >= 5) {
             recordPlayCount(imageFiles[currentImageIndex].name);
         }
+        saveLog();
 
         let newIndex = currentImageIndex + direction;
         const numImages = imageFiles.length;
@@ -278,22 +403,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Process image files
     function processImageFiles(files) {
-        console.log('Processing files:', files.length);
-        const validFiles = files.filter(file => {
-            console.log('Checking file:', file.name, 'type:', file.type);
-            return file.type.startsWith('image/');
-        });
-        
+        const validFiles = files.filter(file => file.type.startsWith('image/'));
         console.log('Found valid images:', validFiles.length);
-        
+
         if (validFiles.length > 0) {
-            imageFiles = validFiles;
-            showImage(0);
-            // Stop any existing slideshow
+            // Store all files in the master list
+            originalImageFiles = validFiles;
+            
+            // Generate the first playlist from the master list
+            generatePlaylist();
+
             if (isPlaying) {
-                stopSlideshow();
-                startSlideshow();
+                pause();
             }
+
+            // Try to find the last played image to start from there
+            if (playLog.lastPlayed) {
+                const lastIndex = imageFiles.findIndex(file => file.name === playLog.lastPlayed);
+                if (lastIndex !== -1) {
+                    currentImageIndex = lastIndex;
+                }
+            }
+            
+            showImage(currentImageIndex);
+            resetTimer();
         }
     }
 
@@ -358,6 +491,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 resetTimer();
             }
         });
+    });
+
+    // --- Event Listener for Page Visibility ---
+    // If the slideshow is playing, re-acquire the lock when the user switches back to the tab.
+    document.addEventListener('visibilitychange', async () => {
+    // Check if the page is visible, if the wakeLock is null, and if the slideshow is in a playing state.
+    if (wakeLock === null && document.visibilityState === 'visible' && isPlaying) {
+        console.log('Page is visible, re-acquiring wake lock');
+        await requestWakeLock();
+    }
+    });
+
+    updateSessionLogDisplay();
+
+    // Add this event listener to save the log when the user closes the tab
+    window.addEventListener('beforeunload', (event) => {
+        // We only need to save if there's a valid log file handle
+        if (logFileHandle) {
+            saveLog();
+        }
     });
 
     updateSessionLogDisplay();
