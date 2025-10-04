@@ -354,9 +354,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function navigateImage(direction) {
         if (imageFiles.length === 0) return;
 
-        if (displayDuration >= 5) {
+        // Get the total configured duration from the input fields.
+        const minutes = parseInt(minutesInput.value) || 0;
+        const seconds = parseInt(secondsInput.value) || 0;
+        const totalDuration = minutes * 60 + seconds;
+
+        // Check if the image was displayed for at least 80% of the set time.
+        // Also, ensure totalDuration is not zero to avoid division errors.
+        if (totalDuration > 0 && displayDuration >= totalDuration * 0.8) {
+            // Log this activity to the session panel on the screen.
+            logSessionActivity();
+            // Record the play count for the local JSON log file.
             recordPlayCount(imageFiles[currentImageIndex].name);
         }
+
         saveLog();
 
         let newIndex = currentImageIndex + direction;
